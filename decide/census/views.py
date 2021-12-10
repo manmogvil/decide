@@ -16,6 +16,53 @@ from rest_framework.status import (
 
 from base.perms import UserIsStaff
 
+from django.contrib.auth.models import User
+from voting.models import Voting
+from django.utils import timezone
+from django.contrib import messages
+
+has_voting_started = lambda v: v.start_date == None or v.start_date > timezone.now()
+
+def add_to_census(request, voting_id, voters, new_logic_checks = None):
+    #Generalized function to add the voters in the list to the census
+    votings = [v for v in list(Voting.objects.all()) if v.id == int(voting_id)]
+
+    #List of evaluations to verify, if it's true proceed, otherwise return the error message
+    logic_checks = [[request.user.is_staff, 'Access denied'],
+                    [votings, 'Voting id does not exist'],
+                    #[not has_voting_started(votings[0]), 'Voting has already started']
+                    [voters, 'No users to add to the census']
+                    ]
+
+    if new_logic_checks:
+        logic_checks += new_logic_checks
+
+    for check in logic_checks:
+        if not check[0]:
+            messages.add_message(request, messages.ERROR, check[1])
+
+    if not all(check[0] for check in logic_checks):
+        return HttpResponseRedirect('/admin/census') 
+
+    for voter in voters:
+        try:
+            census = Census(voting_id=voting_id, voter_id=voter.id)
+            census.save()
+        except:
+            return HttpResponseRedirect('/admin')
+    return HttpResponseRedirect('/admin/census')
+
+def add_filtered(request):
+    if request.method == 'POST': 
+        form = forms.FilteredCensusForm(request.POST)
+        if form.is_valid():
+            voting_id = form.cleaned_data['voting_id']
+            selected_privilege = form.cleaned_data['privileges']
+            voters = User.objects.filter(is_staff=selected_privilege == ['True'])
+            return add_to_census(request, voting_id, voters)
+    else:
+        form = forms.FilteredCensusForm()
+    return render(request, 'create_census_filters.html', {'form':form})
 
 
 class CensusCreate(generics.ListCreateAPIView):

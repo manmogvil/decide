@@ -10,3 +10,10 @@ class CensusForm(forms.Form):
     #num_choices = ( ("ONE"), ("TWO"), ("Three"), ("Four"))
 
     voter_ids = forms.MultipleChoiceField(choices=t_ids, required=True, widget=forms.CheckboxSelectMultiple(), label='Select No')
+
+class FilteredCensusForm(forms.Form):
+    voting_id = forms.IntegerField(min_value=1)
+
+    PRIVILEGE_OPTIONS = ((True, 'Staff'),(False, 'Non-Staff'))
+
+    privileges = forms.MultipleChoiceField(label='Privileges', choices=PRIVILEGE_OPTIONS, required=False)
