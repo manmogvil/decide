@@ -1,5 +1,6 @@
 from django.db.utils import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import redirect, render
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.status import (
@@ -49,3 +50,6 @@ class CensusDetail(generics.RetrieveDestroyAPIView):
         except ObjectDoesNotExist:
             return Response('Invalid voter', status=ST_401)
         return Response('Valid voter')
+
+def create_census(request):
+    return render(request, template_name='create_census.html')
