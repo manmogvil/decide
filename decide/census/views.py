@@ -2,6 +2,7 @@ from django.db.utils import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
+from .models import Census
 from . import forms
 from rest_framework import generics
 from rest_framework.response import Response
@@ -14,9 +15,6 @@ from rest_framework.status import (
 )
 
 from base.perms import UserIsStaff
-from .models import Census
-
-
 
 
 
@@ -57,24 +55,19 @@ class CensusDetail(generics.RetrieveDestroyAPIView):
         return Response('Valid voter')
 
 def create_census(request):
-
-    # if this is a POST request we need to process the form data
     if request.method == 'POST':
-        # create a form instance and populate it with data from the request:
         form = forms.CensusForm(request.POST)
-        print("hola1")
-        # check whether it's valid:
         if form.is_valid():
-            # process the data in form.cleaned_data as required
-            # ...
-            print("hola2")
-            # redirect to a new URL:
-            print(form.cleaned_data['voter_ids'])
+            voting_id = form.cleaned_data['voting_id']
+            voter_ids = form.cleaned_data['voter_ids']
+            for voter_id in voter_ids:
+                print(voter_id)
+                try:
+                    census = Census(voting_id=voting_id, voter_id=voter_id)
+                    census.save()
+                except IntegrityError:
+                    return HttpResponseRedirect('/admin/census')
             return HttpResponseRedirect('/admin/census')
-
-    # if a GET (or any other method) we'll create a blank form
     else:
-        print("hola3")
         form = forms.CensusForm()
-
     return render(request, 'create_census.html', {'form':form})
