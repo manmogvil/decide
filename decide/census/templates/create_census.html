@@ -1,2 +1,7 @@
-{% extends 'base.html' %}
-{% load i18n static %}
+
+<h1>Hola</h1>
+<form action="" method="POST">
+    {% csrf_token %}
+    {{ form }}
+    <input type="submit" value="Submit">
+</form>
