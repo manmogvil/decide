@@ -8,10 +8,15 @@ from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 from django.db import IntegrityError
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.core.exceptions import ObjectDoesNotExist
 
 from .serializers import UserSerializer
+
+
+def home(request):
+	count = User.objects.count()	
+	return render(request, 'home.html', {'count': count})
 
 
 class GetUserView(APIView):
