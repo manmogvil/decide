@@ -1,5 +1,9 @@
 from django.db.utils import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import redirect, render
+from .models import Census
+from . import forms
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.status import (
@@ -11,7 +15,7 @@ from rest_framework.status import (
 )
 
 from base.perms import UserIsStaff
-from .models import Census
+
 
 
 class CensusCreate(generics.ListCreateAPIView):
@@ -49,3 +53,21 @@ class CensusDetail(generics.RetrieveDestroyAPIView):
         except ObjectDoesNotExist:
             return Response('Invalid voter', status=ST_401)
         return Response('Valid voter')
+
+def create_census(request):
+    if request.method == 'POST':
+        form = forms.CensusForm(request.POST)
+        if form.is_valid():
+            voting_id = form.cleaned_data['voting_id']
+            voter_ids = form.cleaned_data['voter_ids']
+            for voter_id in voter_ids:
+                print(voter_id)
+                try:
+                    census = Census(voting_id=voting_id, voter_id=voter_id)
+                    census.save()
+                except IntegrityError:
+                    return HttpResponseRedirect('/admin/census')
+            return HttpResponseRedirect('/admin/census')
+    else:
+        form = forms.CensusForm()
+    return render(request, 'create_census.html', {'form':form})

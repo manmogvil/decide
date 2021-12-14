@@ -1,0 +1,10 @@
+<form action="{% url 'registerUser' %}" method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <input type="submit" class="btn btn-success" id="Register" value="Register"></input>
+    {% for message in messages %}
+        <p class="item" id="messages">{{ message }}</p>
+    {% endfor%}
+</form>
+<a href="/authentication/">volver atrás</a>
