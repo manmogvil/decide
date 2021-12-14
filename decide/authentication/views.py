@@ -114,6 +114,11 @@ def activate(request, uidb64, token):
             
             
 
+def home(request):
+	count = User.objects.count()	
+	return render(request, 'home.html', {'count': count})
+
+
 class GetUserView(APIView):
     def post(self, request):
         key = request.data.get('token', '')
