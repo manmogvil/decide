@@ -2,6 +2,7 @@ from django.db.utils import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
+
 from .models import Census
 from . import forms
 from rest_framework import generics
@@ -15,22 +16,21 @@ from rest_framework.status import (
 )
 
 from base.perms import UserIsStaff
-
 from django.contrib.auth.models import User
 from voting.models import Voting
-from django.utils import timezone
 from django.contrib import messages
+from authentication.models import Profile
 
-has_voting_started = lambda v: v.start_date == None or v.start_date > timezone.now()
+#has_voting_started = lambda v: v.start_date == None or v[0].start_date > timezone.now()
 
 def add_to_census(request, voting_id, voters, new_logic_checks = None):
     #Generalized function to add the voters in the list to the census
     votings = [v for v in list(Voting.objects.all()) if v.id == int(voting_id)]
+    print(votings)
 
     #List of evaluations to verify, if it's true proceed, otherwise return the error message
     logic_checks = [[request.user.is_staff, 'Access denied'],
                     [votings, 'Voting id does not exist'],
-                    #[not has_voting_started(votings[0]), 'Voting has already started']
                     [voters, 'No users to add to the census']
                     ]
 
@@ -40,10 +40,8 @@ def add_to_census(request, voting_id, voters, new_logic_checks = None):
     for check in logic_checks:
         if not check[0]:
             messages.add_message(request, messages.ERROR, check[1])
-
-    if not all(check[0] for check in logic_checks):
-        return HttpResponseRedirect('/admin/census') 
-
+            return HttpResponseRedirect('/admin/census') 
+        
     for voter in voters:
         try:
             census = Census(voting_id=voting_id, voter_id=voter.id)
@@ -56,9 +54,24 @@ def add_filtered(request):
     if request.method == 'POST': 
         form = forms.FilteredCensusForm(request.POST)
         if form.is_valid():
-            voting_id = form.cleaned_data['voting_id']
+            voting_id = form.cleaned_data['voting'].__getattribute__('pk')
             selected_privilege = form.cleaned_data['privileges']
-            voters = User.objects.filter(is_staff=selected_privilege == ['True'])
+            selected_sex = form.cleaned_data['sex']
+            selected_city = form.cleaned_data['city']
+            selected_init_age = form.cleaned_data['init_age']
+            selected_fin_age = form.cleaned_data['fin_age']
+            voters = User.objects.all()
+            #Filter by privilege
+            voters = User.objects.all().filter(is_staff=selected_privilege == ['True']) if len(selected_privilege) != 0 else voters
+            #Filter by sex
+            voters = voters.filter(sex__in=selected_sex) if len(selected_sex) != 0 else voters
+            #Filter by city
+            voters = voters.filter(city__iexact=selected_city) if len(selected_city) != 0 else voters
+            #Filter by age
+            voters = voters.filter(birthdate__gte=selected_init_age) if selected_init_age is not None else voters
+            voters = voters.filter(birthdate__lte=selected_fin_age) if selected_fin_age is not None else voters
+            print(voters)
+
             return add_to_census(request, voting_id, voters)
     else:
         form = forms.FilteredCensusForm()
