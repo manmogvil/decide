@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'rest_framework_swagger',
     'gateway',
+    
+    'nocaptcha_recaptcha',
 ]
 
 REST_FRAMEWORK = {
@@ -87,7 +89,7 @@ ROOT_URLCONF = 'decide.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates'), os.path.join(BASE_DIR, 'templates/usersAuth'), os.path.join(BASE_DIR, 'templates/registration'), ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -181,6 +183,15 @@ if os.path.exists("config.jsonnet"):
 
 INSTALLED_APPS = INSTALLED_APPS + MODULES
 
+
+
+LOGIN_URL='/authentication/accounts/login'
+
+
+
+NORECAPTCHA_SITE_KEY = '6LfkiZ0dAAAAAAp9g82Rgiw0eZjfHLhkOKbKKLir'
+NORECAPTCHA_SECRET_KEY = '6LfkiZ0dAAAAACjIYbuhhFcMxj36i8KL1oOUPXK2'
+
 #DataFlair
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
@@ -188,3 +199,4 @@ EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'egc.veleta@gmail.com'
 EMAIL_HOST_PASSWORD = 'egc_2021'
+
