@@ -201,3 +201,4 @@ EMAIL_HOST_USER = 'egc.veleta@gmail.com'
 EMAIL_HOST_PASSWORD = 'egc_2021'
 
 
+

@@ -13,6 +13,6 @@ urlpatterns = [
     path('registerUser/', register, name='registerUser'),
     
     path('activate/<uidb64>/<token>/', activate, name='activate'),
-    
+
     path('accounts/', include('django.contrib.auth.urls')),
 ]
