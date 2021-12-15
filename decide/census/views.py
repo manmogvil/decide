@@ -2,6 +2,7 @@ from django.db.utils import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
+
 from .models import Census
 from . import forms
 from rest_framework import generics
@@ -15,7 +16,62 @@ from rest_framework.status import (
 )
 
 from base.perms import UserIsStaff
+from django.contrib.auth.models import User
+from voting.models import Voting
+from django.contrib import messages
+from authentication.models import Profile
 
+#has_voting_started = lambda v: v.start_date == None or v[0].start_date > timezone.now()
+
+def add_to_census(request, voting_id, voters, new_logic_checks = None):
+    #Generalized function to add the voters in the list to the census
+    votings = [v for v in list(Voting.objects.all()) if v.id == int(voting_id)]
+    print(votings)
+
+    #List of evaluations to verify, if it's true proceed, otherwise return the error message
+    logic_checks = [[request.user.is_staff, 'Access denied'],
+                    [votings, 'Voting id does not exist'],
+                    [voters, 'No users to add to the census']
+                    ]
+
+    if new_logic_checks:
+        logic_checks += new_logic_checks
+
+    for check in logic_checks:
+        if not check[0]:
+            messages.add_message(request, messages.ERROR, check[1])
+            return HttpResponseRedirect('/admin/census') 
+        
+    for voter in voters:
+        try:
+            census = Census(voting_id=voting_id, voter_id=voter.id)
+            census.save()
+        except:
+            return HttpResponseRedirect('/admin')
+    return HttpResponseRedirect('/admin/census')
+
+def add_filtered(request):
+    if request.method == 'POST': 
+        form = forms.FilteredCensusForm(request.POST)
+        if form.is_valid():
+            voting_id = form.cleaned_data['voting'].__getattribute__('pk')
+            selected_sex = form.cleaned_data['sex']
+            selected_city = form.cleaned_data['city']
+            selected_init_age = form.cleaned_data['init_age']
+            selected_fin_age = form.cleaned_data['fin_age']
+            voters = Profile.objects.all()
+            #Filter by sex
+            voters = voters.filter(sex__in=selected_sex) if len(selected_sex) != 0 else voters
+            #Filter by city
+            voters = voters.filter(city__iexact=selected_city) if len(selected_city) != 0 else voters
+            #Filter by age
+            voters = voters.filter(birthdate__gte=selected_init_age) if selected_init_age is not None else voters
+            voters = voters.filter(birthdate__lte=selected_fin_age) if selected_fin_age is not None else voters
+
+            return add_to_census(request, voting_id, voters)
+    else:
+        form = forms.FilteredCensusForm()
+    return render(request, 'create_census_filters.html', {'form':form})
 
 
 class CensusCreate(generics.ListCreateAPIView):
@@ -58,7 +114,7 @@ def create_census(request):
     if request.method == 'POST':
         form = forms.CensusForm(request.POST)
         if form.is_valid():
-            voting_id = form.cleaned_data['voting_id']
+            voting_id = form.cleaned_data['voting'].__getattribute__('pk')
             voter_ids = form.cleaned_data['voter_ids']
             for voter_id in voter_ids:
                 print(voter_id)
