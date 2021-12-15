@@ -26,6 +26,7 @@ UserModel = get_user_model()
 from django.core.mail import send_mail
 from .forms import RegisterUserForm
 
+from .models import Profile
 
 
 
@@ -44,6 +45,19 @@ def register(request):
                 user = form.save(commit=False)
                 user.is_active = False
                 user.save()
+                
+                sex = request.POST.get('sex', 'DK/NA')
+                location = request.POST.get('location', 'Sin especificar')
+                birth_date = request.POST.get('birth_date', 'None')
+                # print('sex: '+sex+'\nlocation: '+location+'\nbirth: '+birth_date)
+
+                profile = Profile.objects.get(user=user)
+                profile.sex = sex
+                profile.location = location
+                profile.birth_date = birth_date
+                # print(profile.sex, profile.location, profile.birth_date, profile.user)
+
+                profile.save()
 
                 # Send confirmation email
                 current_site = get_current_site(request)
