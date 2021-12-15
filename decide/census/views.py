@@ -55,14 +55,11 @@ def add_filtered(request):
         form = forms.FilteredCensusForm(request.POST)
         if form.is_valid():
             voting_id = form.cleaned_data['voting'].__getattribute__('pk')
-            selected_privilege = form.cleaned_data['privileges']
             selected_sex = form.cleaned_data['sex']
             selected_city = form.cleaned_data['city']
             selected_init_age = form.cleaned_data['init_age']
             selected_fin_age = form.cleaned_data['fin_age']
-            voters = User.objects.all()
-            #Filter by privilege
-            voters = User.objects.all().filter(is_staff=selected_privilege == ['True']) if len(selected_privilege) != 0 else voters
+            voters = Profile.objects.all()
             #Filter by sex
             voters = voters.filter(sex__in=selected_sex) if len(selected_sex) != 0 else voters
             #Filter by city
@@ -70,7 +67,6 @@ def add_filtered(request):
             #Filter by age
             voters = voters.filter(birthdate__gte=selected_init_age) if selected_init_age is not None else voters
             voters = voters.filter(birthdate__lte=selected_fin_age) if selected_fin_age is not None else voters
-            print(voters)
 
             return add_to_census(request, voting_id, voters)
     else:
@@ -118,7 +114,7 @@ def create_census(request):
     if request.method == 'POST':
         form = forms.CensusForm(request.POST)
         if form.is_valid():
-            voting_id = form.cleaned_data['voting_id']
+            voting_id = form.cleaned_data['voting'].__getattribute__('pk')
             voter_ids = form.cleaned_data['voter_ids']
             for voter_id in voter_ids:
                 print(voter_id)
