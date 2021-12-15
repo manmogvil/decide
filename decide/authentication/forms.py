@@ -31,11 +31,11 @@ class RegisterUserForm(UserCreationForm):
     )
     
     first_name = forms.CharField(max_length=140, required=True)
-    last_name = forms.CharField(max_length=140, required=False)
+    last_name = forms.CharField(max_length=140, required=True)
     email = forms.EmailField(required=True)
     sex=forms.ChoiceField(choices=SEX_CHOICES)
-    location = forms.CharField(max_length=140, required=False)
-    birth_date = forms.DateField (required=False, widget=forms.TextInput(attrs={'placeholder': 'yyyy-mm-dd'}))
+    location = forms.CharField(max_length=140, required=True)
+    birth_date = forms.DateField (required=True, widget=forms.TextInput(attrs={'placeholder': 'yyyy-mm-dd'}))
 
     captcha = NoReCaptchaField()
 
