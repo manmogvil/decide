@@ -1,0 +1,15 @@
+{% if user.is_authenticated %}
+  <script>
+  location.href="/"
+  </script>
+{%endif%}
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" class="btn btn-success" id="Login" value="Login"></input>
+    {% for message in messages %}
+        <p class="item" id="messages">{{ message }}</p>
+    {% endfor%}
+</form>
+<a href="/authentication/">volver atrás</a>

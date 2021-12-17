@@ -1,0 +1,25 @@
+{% load i18n %}
+
+<title>Mi perfil</title>
+
+<h2>{% trans "Mi perfil" %}</h2>
+	<p>{% trans "Welcome to Decide, " %} {% if user.is_authenticated %}{{ user.username }}{% else %}{% trans "visitor" %}{% endif %}</p>
+	<p>
+		<strong> {% trans "Total registeres users" %} </strong> {{ count }}
+	</p>
+
+
+
+{% if user.is_authenticated %}
+  <a href="/authentication/accounts/logout/">cerrar sesión</a>
+  <hr>
+  <a href="/authentication/accounts/password_change/">cambiar contraseña</a>
+{%endif%}
+
+{% if not user.is_authenticated %}
+  <a href="/authentication/accounts/login/">iniciar sesión</a>
+  <hr>
+  <a href="/authentication/registerUser/">registrarse</a>
+  <hr>
+  <a href="/authentication/accounts/password_reset">olvidé mi contraseña</a>
+{%endif%}
