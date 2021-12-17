@@ -23,32 +23,42 @@ from authentication.models import Profile
 
 #has_voting_started = lambda v: v.start_date == None or v[0].start_date > timezone.now()
 
-def add_to_census(request, voting_id, voters, new_logic_checks = None):
-    #Generalized function to add the voters in the list to the census
-    votings = [v for v in list(Voting.objects.all()) if v.id == int(voting_id)]
-    print(votings)
 
-    #List of evaluations to verify, if it's true proceed, otherwise return the error message
+def validate_census_form(request, voting_id, voter_id):
+    
+    voting = Voting.objects.filter(id = voting_id)
+    voter = User.objects.filter(id=voter_id)
+    
     logic_checks = [[request.user.is_staff, 'Access denied'],
-                    [votings, 'Voting id does not exist'],
-                    [voters, 'No users to add to the census']
-                    ]
-
-    if new_logic_checks:
-        logic_checks += new_logic_checks
-
+            [voting, 'Voting with id '+str(voting_id)+' does not exist'],
+            [voter, 'The user with id '+str(voter_id)+' does not exist']
+            ]
+    
     for check in logic_checks:
         if not check[0]:
             messages.add_message(request, messages.ERROR, check[1])
-            return HttpResponseRedirect('/admin/census') 
-        
-    for voter in voters:
+            return False
+    
+    census = Census.objects.filter(voting_id=voting_id, voter_id=voter_id)
+
+    if census:
+        messages.add_message(request, messages.ERROR, 'That census already exists!')
+        return False
+    elif voting.values()[0].get('end_date'):
+        messages.add_message(request, messages.ERROR, 'Voting already closed!')
+        return False    
+    else:
+        return True
+
+
+def add_to_census(request, voting_id, voter_id):    
+    if validate_census_form(request, voting_id, voter_id):
         try:
-            census = Census(voting_id=voting_id, voter_id=voter.id)
+            census = Census(voting_id=voting_id, voter_id=voter_id)
             census.save()
         except:
             return HttpResponseRedirect('/admin')
-    return HttpResponseRedirect('/admin/census')
+    
 
 def add_filtered(request):
     if request.method == 'POST': 
@@ -67,8 +77,14 @@ def add_filtered(request):
             #Filter by age
             voters = voters.filter(birthdate__gte=selected_init_age) if selected_init_age is not None else voters
             voters = voters.filter(birthdate__lte=selected_fin_age) if selected_fin_age is not None else voters
+            print(voters)
 
-            return add_to_census(request, voting_id, voters)
+            if voters:
+                for voter in voters:
+                   add_to_census(request, voting_id, voter.id)
+            
+            return HttpResponseRedirect('/admin/census')
+            
     else:
         form = forms.FilteredCensusForm()
     return render(request, 'create_census_filters.html', {'form':form})
@@ -117,12 +133,7 @@ def create_census(request):
             voting_id = form.cleaned_data['voting'].__getattribute__('pk')
             voter_ids = form.cleaned_data['voter_ids']
             for voter_id in voter_ids:
-                print(voter_id)
-                try:
-                    census = Census(voting_id=voting_id, voter_id=voter_id)
-                    census.save()
-                except IntegrityError:
-                    return HttpResponseRedirect('/admin/census')
+               add_to_census(request, voting_id, voter_id)
             return HttpResponseRedirect('/admin/census')
     else:
         form = forms.CensusForm()
