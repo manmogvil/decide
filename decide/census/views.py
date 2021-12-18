@@ -26,7 +26,6 @@ from authentication.models import Profile
 
 
 def validate_census_form(request, voting_id, voter_id):
-    return True
     print('hola validate')
     voting = Voting.objects.filter(id = voting_id)
     voter = User.objects.filter(id=voter_id)
@@ -74,17 +73,17 @@ def add_filtered(request):
             print('HOLA FORM')
             voting_id = form.cleaned_data['voting'].__getattribute__('pk')
             selected_sex = form.cleaned_data['sex']
-            selected_city = form.cleaned_data['city']
+            selected_location = form.cleaned_data['location']
             selected_init_age = form.cleaned_data['init_age']
             selected_fin_age = form.cleaned_data['fin_age']
             voters = Profile.objects.all()
             #Filter by sex
             voters = voters.filter(sex__in=selected_sex) if len(selected_sex) != 0 else voters
             #Filter by city
-            voters = voters.filter(city__iexact=selected_city) if len(selected_city) != 0 else voters
+            voters = voters.filter(location__iexact=selected_location) if len(selected_location) != 0 else voters
             #Filter by age
-            voters = voters.filter(birthdate__gte=selected_init_age) if selected_init_age is not None else voters
-            voters = voters.filter(birthdate__lte=selected_fin_age) if selected_fin_age is not None else voters
+            voters = voters.filter(birth_date__gte=selected_init_age) if selected_init_age is not None else voters
+            voters = voters.filter(birth_date__lte=selected_fin_age) if selected_fin_age is not None else voters
             print(voters)
 
             if voters:

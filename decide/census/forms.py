@@ -23,7 +23,7 @@ class FilteredCensusForm(forms.Form):
     sex = forms.MultipleChoiceField(label='Sex',choices=SEX_OPTIONS,required=False,
     widget=forms.SelectMultiple(attrs={'style': 'width: 110px;','class': 'form-control'}))
 
-    city = forms.CharField(label='City', required=False,
+    location = forms.CharField(label='Location', required=False,
     widget=forms.TextInput(attrs={'style': 'width: 150px;','class': 'form-control'}))
 
     init_age = forms.DateField(label='Initial age', widget=forms.TextInput(attrs={'placeholder': 'Format: dd/mm/yyyy', 'style': 'width: 200px;','class': 'form-control'}), 
