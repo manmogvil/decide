@@ -15,7 +15,7 @@ from datetime import date
 
 #Use TransactionTestCase instead of BaseTestCase
 class CensusTestCase(TransactionTestCase):
-
+    reset_sequences = True
     def setUp(self):
         super().setUp()
         question1 = Question.objects.create(desc='Question 1')
@@ -24,14 +24,16 @@ class CensusTestCase(TransactionTestCase):
 
         self.census = Census(voting_id=10, voter_id=1)
         self.census.save()
-
     
     def tearDown(self):
         super().tearDown()
+        self.voting1 = None
+        self.admin = None
+        self.user1 = None
+        self.user2 = None
         self.census = None
     
-    '''
-    def test_add_voter_custom_post(self): 
+    def test_add_voter_custom_post(self):
         admin = User(username='admin2', password='qwerty')
         admin.is_staff = True
         admin.save()
@@ -39,17 +41,15 @@ class CensusTestCase(TransactionTestCase):
         self.client.force_login(admin)
         response = self.client.post('/census/addCustom/', 
         data={'voting': ['10'], 'voter_ids': [admin.pk]})
-
         census = Census.objects.all()
         
         print('----------------------------------------------------------------------\n')
         print('Census: ', census)
         print(response)
         print('\n----------------------------------------------------------------------\n')
-      
+        
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(len(census), 2)
-    '''
+        self.assertEqual(len(census), 1)
     
     def test_add_voter_custom_get(self):
 
@@ -59,7 +59,6 @@ class CensusTestCase(TransactionTestCase):
         self.client.force_login(admin)
         response = self.client.get('/census/addCustom/')
         self.assertEqual(response.status_code, 200)
-    
     
     def test_add_filters_post_sex(self):
         admin = User(username='admin2', password='qwerty')
@@ -89,7 +88,7 @@ class CensusTestCase(TransactionTestCase):
         census = Census.objects.all()
       
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(len(census), 3)
+        self.assertEqual(len(census), 2)
 
     def test_add_filters_post_location(self):
         admin = User(username='admin2', password='qwerty')
@@ -123,7 +122,7 @@ class CensusTestCase(TransactionTestCase):
         print('\n----------------------------------------------------------------------\n')
       
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(len(census), 3)
+        self.assertEqual(len(census), 2)
 
     def test_add_filters_post_birth_date(self):
         admin = User(username='admin2', password='qwerty')
@@ -157,7 +156,7 @@ class CensusTestCase(TransactionTestCase):
         print('\n----------------------------------------------------------------------\n')
       
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(len(census), 3)
+        self.assertEqual(len(census), 2)
 
     
     def test_add_filters_post_all(self):
@@ -193,4 +192,3 @@ class CensusTestCase(TransactionTestCase):
       
         self.assertEqual(response.status_code, 302)
         self.assertEqual(len(census), 3)
-        

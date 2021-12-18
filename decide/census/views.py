@@ -26,7 +26,6 @@ from authentication.models import Profile
 
 
 def validate_census_form(request, voting_id, voter_id):
-    print('hola validate')
     voting = Voting.objects.filter(id = voting_id)
     voter = User.objects.filter(id=voter_id)
     
@@ -38,7 +37,6 @@ def validate_census_form(request, voting_id, voter_id):
     for check in logic_checks:
         if not check[0]:
             messages.add_message(request, messages.ERROR, check[1])
-            print(check[1])
             return False
     
     census = Census.objects.filter(voting_id=voting_id, voter_id=voter_id)
@@ -57,7 +55,6 @@ def add_to_census(request, voting_id, voter_id):
     if validate_census_form(request, voting_id, voter_id):
         try:
             census = Census(voting_id=voting_id, voter_id=voter_id)
-            print('hola census')
             census.save()
         except:
             return HttpResponseRedirect('/admin')
@@ -65,12 +62,8 @@ def add_to_census(request, voting_id, voter_id):
 
 def add_filtered(request):
     if request.method == 'POST':
-        print('HOLA POST') 
         form = forms.FilteredCensusForm(request.POST)
-        print(request.POST)
-        print(form.errors)
         if form.is_valid():
-            print('HOLA FORM')
             voting_id = form.cleaned_data['voting'].__getattribute__('pk')
             selected_sex = form.cleaned_data['sex']
             selected_location = form.cleaned_data['location']
@@ -84,11 +77,9 @@ def add_filtered(request):
             #Filter by age
             voters = voters.filter(birth_date__gte=selected_init_age) if selected_init_age is not None else voters
             voters = voters.filter(birth_date__lte=selected_fin_age) if selected_fin_age is not None else voters
-            print(voters)
 
             if voters:
                 for voter in voters:
-                    print('Hola add')
                     add_to_census(request, voting_id, voter.id)
             
             return HttpResponseRedirect('/admin/census')
@@ -137,16 +128,12 @@ class CensusDetail(generics.RetrieveDestroyAPIView):
 def create_census(request):
     if request.method == 'POST':
         form = forms.CensusForm(request.POST)
-        print(request.POST)
-        print(form.errors)
         if form.is_valid():
             voting_id = form.cleaned_data['voting'].pk
             voter_ids = form.cleaned_data['voter_ids']
             for voter_id in voter_ids:
-                print("Hola FORM2")
                 add_to_census(request, voting_id, voter_id)
             return HttpResponseRedirect('/admin/census')
     else:
         form = forms.CensusForm()
-        print("Hola")
     return render(request, 'create_census.html', {'form':form}, status=HTTPStatus.OK)
