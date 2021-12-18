@@ -17,6 +17,7 @@ from rest_framework.status import (
 
 from base.perms import UserIsStaff
 from django.contrib.auth.models import User
+from http import HTTPStatus
 from voting.models import Voting
 from django.contrib import messages
 from authentication.models import Profile
@@ -25,7 +26,7 @@ from authentication.models import Profile
 
 
 def validate_census_form(request, voting_id, voter_id):
-    
+    print('hola validate')
     voting = Voting.objects.filter(id = voting_id)
     voter = User.objects.filter(id=voter_id)
     
@@ -37,6 +38,7 @@ def validate_census_form(request, voting_id, voter_id):
     for check in logic_checks:
         if not check[0]:
             messages.add_message(request, messages.ERROR, check[1])
+            print(check[1])
             return False
     
     census = Census.objects.filter(voting_id=voting_id, voter_id=voter_id)
@@ -55,33 +57,39 @@ def add_to_census(request, voting_id, voter_id):
     if validate_census_form(request, voting_id, voter_id):
         try:
             census = Census(voting_id=voting_id, voter_id=voter_id)
+            print('hola census')
             census.save()
         except:
             return HttpResponseRedirect('/admin')
     
 
 def add_filtered(request):
-    if request.method == 'POST': 
+    if request.method == 'POST':
+        print('HOLA POST') 
         form = forms.FilteredCensusForm(request.POST)
+        print(request.POST)
+        print(form.errors)
         if form.is_valid():
+            print('HOLA FORM')
             voting_id = form.cleaned_data['voting'].__getattribute__('pk')
             selected_sex = form.cleaned_data['sex']
-            selected_city = form.cleaned_data['city']
+            selected_location = form.cleaned_data['location']
             selected_init_age = form.cleaned_data['init_age']
             selected_fin_age = form.cleaned_data['fin_age']
             voters = Profile.objects.all()
             #Filter by sex
             voters = voters.filter(sex__in=selected_sex) if len(selected_sex) != 0 else voters
             #Filter by city
-            voters = voters.filter(city__iexact=selected_city) if len(selected_city) != 0 else voters
+            voters = voters.filter(location__iexact=selected_location) if len(selected_location) != 0 else voters
             #Filter by age
-            voters = voters.filter(birthdate__gte=selected_init_age) if selected_init_age is not None else voters
-            voters = voters.filter(birthdate__lte=selected_fin_age) if selected_fin_age is not None else voters
+            voters = voters.filter(birth_date__gte=selected_init_age) if selected_init_age is not None else voters
+            voters = voters.filter(birth_date__lte=selected_fin_age) if selected_fin_age is not None else voters
             print(voters)
 
             if voters:
                 for voter in voters:
-                   add_to_census(request, voting_id, voter.id)
+                    print('Hola add')
+                    add_to_census(request, voting_id, voter.id)
             
             return HttpResponseRedirect('/admin/census')
             
@@ -129,12 +137,16 @@ class CensusDetail(generics.RetrieveDestroyAPIView):
 def create_census(request):
     if request.method == 'POST':
         form = forms.CensusForm(request.POST)
+        print(request.POST)
+        print(form.errors)
         if form.is_valid():
-            voting_id = form.cleaned_data['voting'].__getattribute__('pk')
+            voting_id = form.cleaned_data['voting'].pk
             voter_ids = form.cleaned_data['voter_ids']
             for voter_id in voter_ids:
-               add_to_census(request, voting_id, voter_id)
+                print("Hola FORM2")
+                add_to_census(request, voting_id, voter_id)
             return HttpResponseRedirect('/admin/census')
     else:
         form = forms.CensusForm()
-    return render(request, 'create_census.html', {'form':form})
+        print("Hola")
+    return render(request, 'create_census.html', {'form':form}, status=HTTPStatus.OK)
