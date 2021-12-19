@@ -2,6 +2,12 @@ from django.db.utils import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
+from django.contrib.sites.shortcuts import get_current_site
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
 
 from .models import Census
 from . import forms
@@ -56,6 +62,19 @@ def add_to_census(request, voting_id, voter_id):
         try:
             census = Census(voting_id=voting_id, voter_id=voter_id)
             census.save()
+            user_added = User.objects.filter(id=voter_id).values()
+            if(user_added):
+                nombre = str(user_added[0].get('first_name'))
+                email = str(user_added[0].get('email'))
+                current_site = get_current_site(request)
+                print(str(current_site.domain))
+                send_mail(
+                'Added to voting census',
+                'Hi '+nombre+', you just got added to participate in some voting, to vote just click in the link below: http://'+str(current_site.domain)+"/booth/"+str(voting_id)+'/',
+                None,
+                [email],
+                fail_silently=False,
+                )
         except:
             return HttpResponseRedirect('/admin')
     
