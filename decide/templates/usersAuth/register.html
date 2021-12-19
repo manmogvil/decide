@@ -18,7 +18,30 @@
             {% for message in messages %}
             <p class="item" id="messages">{{ message }}</p>
             {% endfor%}
+
+            {% for error in form.username.errors %}
+            <p class=" d-flex justify-content-center bg-danger"></p>
+            {% endfor %}
+
+            {% for error in form.first_name.errors %}
+            <p class=" d-flex justify-content-center bg-danger"></p>
+            {% endfor %}
+
+            {% for error in form.last_name.errors %}
+            <p class=" d-flex justify-content-center bg-danger"></p>
+            {% endfor %}
+
+            {% for error in form.contact_email.errors %}
+            <p class=" d-flex justify-content-center bg-danger"></p>
+            {% endfor %}
+
+            {% for error in form.password2.errors %}
+            <p class=" d-flex justify-content-center bg-danger"></p>
+            {% endfor %}
         </form>
+    </div>
+    <br>
+    <div>
     </div>
 
 </body>
