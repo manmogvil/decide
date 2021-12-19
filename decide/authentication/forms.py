@@ -7,19 +7,19 @@ from django.contrib.auth.models import User
 from nocaptcha_recaptcha.fields import NoReCaptchaField
 
 
-#Formulario para editar usuario existentes
-class UserForm(forms.ModelForm):
-    class Meta:
-        model = User
-        fields = ('first_name', 'last_name', 'email')
-
-class ProfileForm(forms.ModelForm):
-    class Meta:
-        model = Profile
-        fields = ('sex', 'location', 'birth_date')
-        widgets = {
-            'birth_date': forms.TextInput(attrs={'placeholder': 'yyyy-mm-dd'}),
-        }
+# #Formulario para editar usuario existentes
+# class UserForm(forms.ModelForm):
+#     class Meta:
+#         model = User
+#         fields = ('first_name', 'last_name', 'email')
+# 
+# class ProfileForm(forms.ModelForm):
+#     class Meta:
+#         model = Profile
+#         fields = ('sex', 'location', 'birth_date')
+#         widgets = {
+#             'birth_date': forms.TextInput(attrs={'placeholder': 'yyyy-mm-dd'}),
+#         }
 
 
 #Formulario para crear nuevos usuarios
