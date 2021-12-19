@@ -144,6 +144,14 @@ class AuthTestCase(APITestCase):
 
 
 class RegisterTestCase(TestCase):
+
+    def setUp(self):
+        super().setUp()
+
+    def tearDown(self):
+        super().tearDown()
+
+
     def test_nuevo_usuario_OK(self):
         os.environ['NORECAPTCHA_TESTING'] = 'True'  # desactivamos el captcha
 
@@ -226,6 +234,13 @@ class RegisterTestCase(TestCase):
 
 class ActivateTestCase(TestCase):
 
+    def setUp(self):
+        super().setUp()
+
+    def tearDown(self):
+        super().tearDown()
+
+
     def test_activation_link_OK(self):
 
         user1 = User(username='voter2')
@@ -257,6 +272,13 @@ class ActivateTestCase(TestCase):
         
 
 class HomeTestCase(TestCase):
+
+    def setUp(self):
+        super().setUp()
+
+    def tearDown(self):
+        super().tearDown()
+
 
     def test_get_home(self):
 
