@@ -72,7 +72,8 @@ MODULES = [
     'voting',
 ]
 
-BASEURL = 'http://localhost:8000'
+BASEURL = 'https://egc-veleta.herokuapp.com'
+APIS = {}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -185,6 +186,7 @@ INSTALLED_APPS = INSTALLED_APPS + MODULES
 
 
 
+
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'home'
 
@@ -206,3 +208,9 @@ EMAIL_HOST_PASSWORD = 'egc_2021'
 
 
 
+
+NOSE_ARGS = [
+    '--with-xunit'
+]
+import django_heroku
+django_heroku.settings(locals(),test_runner=False)
